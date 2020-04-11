@@ -13,10 +13,12 @@ describe('ember-template-lint executable', function () {
   beforeEach(function () {
     project = Project.defaultSetup();
     project.chdir();
+    process.env.LC_ALL = 'en_US';
   });
 
   afterEach(async function () {
     await project.dispose();
+    delete process.env.LC_ALL;
   });
 
   describe('basic usage', function () {
