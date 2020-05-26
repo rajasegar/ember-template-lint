@@ -58,6 +58,7 @@
 * [no-whitespace-for-layout](rule/no-whitespace-for-layout.md)
 * [no-whitespace-within-word](rule/no-whitespace-within-word.md)
 * [no-yield-only](rule/no-yield-only.md)
+* [no-yield-block-params-to-else-inverse](rule/no-yield-block-params-to-else-inverse.md)
 * [quotes](rule/quotes.md)
 * [require-button-type](rule/require-button-type.md)
 * [require-iframe-title](rule/require-iframe-title.md)
