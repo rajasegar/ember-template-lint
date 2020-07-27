@@ -2,13 +2,16 @@
 
 'use strict';
 
+// Use V8's code cache to speed up instantiation time:
+require('v8-compile-cache'); // eslint-disable-line import/no-unassigned-import
+
 const fs = require('fs');
 const path = require('path');
 const micromatch = require('micromatch');
 const isValidGlob = require('is-valid-glob');
 const getStdin = require('get-stdin');
 const globby = require('globby');
-const Linter = require('../lib/index');
+const Linter = require('../lib');
 const processResults = require('../lib/helpers/process-results');
 
 const readFile = require('util').promisify(fs.readFile);
@@ -154,13 +157,13 @@ function parseArgv(_argv) {
   }
 }
 
-const PENDING_RULES = ['invalid-pending-module', 'invalid-pending-module-rule'];
+const PENDING_RULES = new Set(['invalid-pending-module', 'invalid-pending-module-rule']);
 function printPending(results, options) {
   let pendingList = [];
   for (let filePath in results.files) {
     let fileResults = results.files[filePath];
     let failingRules = fileResults.messages.reduce((memo, error) => {
-      if (!PENDING_RULES.includes(error.rule)) {
+      if (!PENDING_RULES.has(error.rule)) {
         memo.add(error.rule);
       }
 
@@ -168,7 +171,7 @@ function printPending(results, options) {
     }, new Set());
 
     if (failingRules.size > 0) {
-      pendingList.push({ moduleId: filePath.slice(0, -4), only: Array.from(failingRules) });
+      pendingList.push({ moduleId: filePath.slice(0, -4), only: [...failingRules] });
     }
   }
   let pendingListString = JSON.stringify(pendingList, null, 2);
@@ -192,7 +195,7 @@ async function run() {
   if (options.config) {
     try {
       config = JSON.parse(options.config);
-    } catch (error) {
+    } catch {
       console.error('Could not parse specified `--config` as JSON');
       process.exitCode = 1;
       return;
@@ -210,8 +213,8 @@ async function run() {
       config,
       rule: options.rule,
     });
-  } catch (e) {
-    console.error(e.message);
+  } catch (error) {
+    console.error(error.message);
     process.exitCode = 1;
     return;
   }
