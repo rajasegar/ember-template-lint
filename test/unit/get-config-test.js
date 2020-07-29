@@ -765,10 +765,45 @@ describe('getConfigForFile', function () {
         name: 'no-implicit-this',
         config: { severity: 2, config: { allow: ['some-helper'] } },
       });
-    } catch (ex) {
-      expect(ex.message).toEqual(
+    } catch (error) {
+      expect(error.message).toEqual(
         'Error parsing specified `--rule` config no-implicit-this:["error", "allow": ["some-helper"] }] as JSON.'
       );
     }
+  });
+
+  it('processing config is idempotent', function () {
+    let config = {
+      plugins: [
+        {
+          name: 'foo',
+          configurations: {
+            recommended: {
+              rules: {
+                foo: true,
+              },
+            },
+          },
+          rules: {
+            foo: class Rule {},
+          },
+        },
+      ],
+      extends: ['foo:recommended'],
+      rules: {
+        bar: false,
+      },
+    };
+
+    let expected = {
+      foo: { config: true, severity: 2 },
+      bar: { config: false, severity: 0 },
+    };
+
+    let processedConfig = getProjectConfig({ config });
+    expect(processedConfig.rules).toEqual(expected);
+
+    let reprocessedConfig = getProjectConfig({ config });
+    expect(reprocessedConfig.rules).toEqual(expected);
   });
 });
